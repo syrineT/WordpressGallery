@@ -8,6 +8,7 @@ import android.graphics.Bitmap;
 import android.os.Environment;
 import android.provider.MediaStore;
 import android.util.Log;
+import android.widget.Toast;
 
 import com.syrine.MainActivity;
 import com.syrine.WordPressWebview;
@@ -30,7 +31,7 @@ import retrofit.mime.TypedFile;
  * Created by syrinetrabelsi on 25/01/15.
  */
 public class AppManager {
-    public static void uploadPic(Context context, Bitmap bitmap, String token) throws IOException {
+    public static void uploadPic(final Context context, Bitmap bitmap, String token) throws IOException {
         final ProgressDialog dialog = ProgressDialog.show(context, "", "Chargement", true);
         MultipartTypedOutput mto = new MultipartTypedOutput();
         File dest = new File(Environment.getExternalStorageDirectory(), UUID.randomUUID() + ".jpg");
@@ -42,17 +43,21 @@ public class AppManager {
         RetrofitService.getService().uploadPic(token, mto, new Callback<String>() {
             @Override
             public void success(String s, Response response) {
+                Toast.makeText(context, "Done !", Toast.LENGTH_SHORT).show();
                 dialog.dismiss();
             }
 
             @Override
             public void failure(RetrofitError error) {
                 dialog.dismiss();
+                Toast.makeText(context, "Error on upload contact me syrine.trabelsi23@gmail.com !", Toast.LENGTH_SHORT).show();
+
             }
         });
     }
 
     public static void requestToken(final MainActivity context) {
+        final ProgressDialog dialog = ProgressDialog.show(context, "", "Chargement", true);
         RetrofitService.getService().requestToken("39109", "oauth://login.syrine.com", "code", "https://syrine23.wordpress.com/", new Callback<Response>() {
             @Override
             public void success(Response result, Response response) {
@@ -75,13 +80,18 @@ public class AppManager {
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
+                dialog.dismiss();
+                Toast.makeText(context, "requesting the auth code..", Toast.LENGTH_SHORT).show();
+
                 Intent i = new Intent(context, WordPressWebview.class);
                 i.putExtra("content", sb.toString());
-                context.startActivityForResult(i, 568);
+                context.startActivityForResult(i, MainActivity.REQUEST_TOKEN);
             }
 
             @Override
             public void failure(RetrofitError error) {
+                dialog.dismiss();
+                Toast.makeText(context, "error requesting code ! contact syrine.trabelsi23@gmail.com", Toast.LENGTH_SHORT).show();
 
             }
         });
@@ -101,10 +111,15 @@ public class AppManager {
     }*/
 
     public static void getToken(final MainActivity context, String code, final Bitmap imageBitmap) {
+        final ProgressDialog dialog = ProgressDialog.show(context, "", "Chargement", true);
+
         RetrofitService.getService().getToken("39109", "oauth://login.syrine.com", "IugJWGVukPSvdpIpqeuWBTiFcKxypg2Y9bKMJLsYOOtxgaB9cCjM9rJ6R9hhIisk", code, "authorization_code", new Callback<ToknModel>() {
             @Override
             public void success(ToknModel s, Response response) {
+                dialog.dismiss();
                 //saveToken(context, s.getAccess_token());
+                Toast.makeText(context, "Success! now uploading pic", Toast.LENGTH_SHORT).show();
+
                 try {
                     AppManager.uploadPic(context, imageBitmap, "Bearer " + s.getAccess_token());
                 } catch (IOException e) {
@@ -115,6 +130,9 @@ public class AppManager {
 
             @Override
             public void failure(RetrofitError error) {
+                Toast.makeText(context, "error requesting token ! contact syrine.trabelsi23@gmail.com", Toast.LENGTH_SHORT).show();
+
+                dialog.dismiss();
 
             }
         });
