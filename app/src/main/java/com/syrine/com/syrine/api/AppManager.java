@@ -50,6 +50,7 @@ public class AppManager {
             @Override
             public void failure(RetrofitError error) {
                 dialog.dismiss();
+                Toast.makeText(context, "Can you restart the app ?", Toast.LENGTH_SHORT).show();
                 Toast.makeText(context, "Error on upload contact me syrine.trabelsi23@gmail.com !", Toast.LENGTH_SHORT).show();
 
             }
